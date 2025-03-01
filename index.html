@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MK Home Foods</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+        }
+        header {
+            background-color: #d32f2f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #f8f8f8;
+            padding: 10px;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #333;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .section {
+            margin: 20px auto;
+            padding: 20px;
+            width: 80%;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+        button {
+            background: #d32f2f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        #cart {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff3e0;
+            border-radius: 10px;
+            width: 80%;
+        }
+    </style>
+    <script>
+        let cart = [];
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.container').forEach(container => {
+                container.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'flex';
+        }
+
+        function addToCart(item, price) {
+            cart.push({ item, price });
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartSection = document.getElementById('cart');
+            let total = cart.reduce((sum, item) => sum + item.price, 0);
+            cartSection.innerHTML = '<h2>Cart</h2>' + (cart.length > 0 ? cart.map(item => `<p>${item.item} - ₹${item.price}</p>`).join('') + `<p><strong>Total: ₹${total}</strong></p><button onclick="placeOrder()">Order Now</button>` : '<p>Cart is empty</p>');
+        }
+
+        function placeOrder() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            
+            let orderDetails = cart.map(item => `${item.item} (₹${item.price})`).join(', ');
+            let apiKey = 'mfP6nraqCY1cmDsfHCIhvJZmmOXZKlgeiKZyjddfR3xmwIXP4QlDKTzmWdkX';
+            let phoneNumber = '8222962223';
+            let message = `New Order: ${orderDetails}`;
+            
+            fetch('https://www.fast2sms.com/dev/bulkV2', {
+                method: 'POST',
+                headers: {
+                    'authorization': apiKey,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    route: "q",
+                    message: message,
+                    language: "english",
+                    flash: "0",
+                    numbers: phoneNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.return) {
+                    alert('Order placed successfully!');
+                    cart = [];
+                    updateCart();
+                } else {
+                    alert('Failed to send message. Check API settings.');
+                }
+            })
+            .catch(error => {
+                console.error('Error placing order:', error);
+                alert('Failed to place order. Try again later.');
+            });
+        }
+    </script>
+</head>
+<body>
+    <header>MK Home Foods - "Bringing You the Taste of Home"</header>
+    
+    <nav>
+        <a onclick="showSection('home')">Home</a>
+        <a onclick="showSection('order')">Order</a>
+        <a onclick="showSection('settings')">Settings</a>
+        <a onclick="showSection('signin')">Sign In</a>
+    </nav>
+    
+    <div id="home" class="container" style="display: flex;">
+        <section class="section">
+            <h2>Welcome to MK Home Foods</h2>
+            <p>Order homemade food with just a few clicks.</p>
+        </section>
+    </div>
+    
+    <div id="order" class="container">
+        <section class="section">
+            <h2>Order Now</h2>
+            <div class="menu-item"><span>Chicken Biryani - ₹250</span><button onclick="addToCart('Chicken Biryani', 250)">Add to Cart</button></div>
+            <div class="menu-item"><span>Paneer Butter Masala - ₹200</span><button onclick="addToCart('Paneer Butter Masala', 200)">Add to Cart</button></div>
+            <div class="menu-item"><span>Dal Tadka - ₹150</span><button onclick="addToCart('Dal Tadka', 150)">Add to Cart</button></div>
+            <div class="menu-item"><span>Masala Dosa - ₹120</span><button onclick="addToCart('Masala Dosa', 120)">Add to Cart</button></div>
+            <div class="menu-item"><span>Gulab Jamun - ₹80</span><button onclick="addToCart('Gulab Jamun', 80)">Add to Cart</button></div>
+        </section>
+        <section id="cart" class="section">
+            <h2>Cart</h2>
+            <p>Cart is empty</p>
+        </section>
+    </div>
+</body>
+</html>
